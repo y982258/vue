@@ -186,21 +186,32 @@ export function mountComponent (
       measure(`vue ${name} patch`, startTag, endTag)
     }
   } else {
-    updateComponent = () => {
+
+    // 重点  以上代码是一些条件判断
+    updateComponent = () => {  // 执行的时候会触发取值操作
       vm._update(vm._render(), hydrating)
     }
+
+
   }
 
   // we set this to vm._watcher inside the watcher's constructor
   // since the watcher's initial patch may call $forceUpdate (e.g. inside child
   // component's mounted hook), which relies on vm._watcher being already defined
+  
+  
+  
+  // new Watcher把 updateComponent传进去  调用updateComponent函数执行放的是vm._update：把虚拟dom转成真实dom vm _render() 使用render函数生成虚拟dom
   new Watcher(vm, updateComponent, noop, {
     before () {
       if (vm._isMounted && !vm._isDestroyed) {
         callHook(vm, 'beforeUpdate')
       }
     }
-  }, true /* isRenderWatcher */)
+  }, true /* isRenderWatcher：渲染Watcher   */)
+
+
+
   hydrating = false
 
   // manually mounted instance, call mounted on self

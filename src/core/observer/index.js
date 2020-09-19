@@ -34,6 +34,8 @@ export function toggleObserving (value: boolean) {
  * object's property keys into getter/setters that
  * collect dependencies and dispatch updates.
  */
+
+// 观测类
 export class Observer {
   value: any;
   dep: Dep;
@@ -41,7 +43,11 @@ export class Observer {
 
   constructor (value: any) {
     this.value = value
-    this.dep = new Dep()
+
+
+    this.dep = new Dep()   // 数组的依赖管理器
+
+
     this.vmCount = 0
     def(value, '__ob__', this)
     if (Array.isArray(value)) {
@@ -61,6 +67,7 @@ export class Observer {
    * getter/setters. This method should only be called when
    * value type is Object.
    */
+  // 循环使用 defineReactive 重新定义
   walk (obj: Object) {
     const keys = Object.keys(obj)
     for (let i = 0; i < keys.length; i++) {
@@ -112,6 +119,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
     return
   }
   let ob: Observer | void
+  // __ob__观测过的属性都有  判断是否观测过
   if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
     ob = value.__ob__
   } else if (
@@ -121,6 +129,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
     Object.isExtensible(value) &&
     !value._isVue
   ) {
+    // 观测
     ob = new Observer(value)
   }
   if (asRootData && ob) {
@@ -139,8 +148,10 @@ export function defineReactive (
   customSetter?: ?Function,
   shallow?: boolean
 ) {
-  const dep = new Dep()
+  const dep = new Dep()   // new Dep()  依赖管理器  对象中的属性都有一个dep  dep里面存的是Watcher 
 
+
+  // 如果这个对象中的某个属性 不能被修改，直接结束
   const property = Object.getOwnPropertyDescriptor(obj, key)
   if (property && property.configurable === false) {
     return
@@ -153,6 +164,7 @@ export function defineReactive (
     val = obj[key]
   }
 
+  // 重点
   let childOb = !shallow && observe(val)
   Object.defineProperty(obj, key, {
     enumerable: true,
@@ -160,8 +172,8 @@ export function defineReactive (
     get: function reactiveGetter () {
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
-        dep.depend()
-        if (childOb) {
+        dep.depend()   // 依赖收集
+        if (childOb) {  // 收集对象中的对象的依赖收集
           childOb.dep.depend()
           if (Array.isArray(value)) {
             dependArray(value)
@@ -188,7 +200,7 @@ export function defineReactive (
         val = newVal
       }
       childOb = !shallow && observe(newVal)
-      dep.notify()
+      dep.notify()  // 通知更新操作
     }
   })
 }
@@ -204,16 +216,23 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
   ) {
     warn(`Cannot set reactive property on undefined, null, or primitive value: ${(target: any)}`)
   }
+
+  // 如果数组调用set改变索引，我就调用我重写后的splice来实现响应式
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.length = Math.max(target.length, key)
     target.splice(key, 1, val)
     return val
   }
+
+  // 如如果是对象本身的属性 那么我直接进行更改就行了
   if (key in target && !(key in Object.prototype)) {
     target[key] = val
     return val
   }
+
+
   const ob = (target: any).__ob__
+  // 如果是Vue实例 或 根数据data时 报错
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
       'Avoid adding reactive properties to a Vue instance or its root $data ' +
@@ -221,11 +240,16 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     )
     return val
   }
+
+  // 如果target这个属性在data上不是响应式的也不需要将其中的属性定义成响应式属性
   if (!ob) {
     target[key] = val
     return val
   }
+
+  // 接下来定义成响应式的
   defineReactive(ob.value, key, val)
+  // 通知视图更新
   ob.dep.notify()
   return val
 }
@@ -239,6 +263,7 @@ export function del (target: Array<any> | Object, key: any) {
   ) {
     warn(`Cannot delete reactive property on undefined, null, or primitive value: ${(target: any)}`)
   }
+  // 如果是数组依旧调用splice方法
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.splice(key, 1)
     return
@@ -251,13 +276,16 @@ export function del (target: Array<any> | Object, key: any) {
     )
     return
   }
+  // 如果本身就没有这个属性什么都不做
   if (!hasOwn(target, key)) {
     return
   }
+  // 删除这个属性
   delete target[key]
   if (!ob) {
     return
   }
+  // 通知更新
   ob.dep.notify()
 }
 

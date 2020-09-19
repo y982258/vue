@@ -5,6 +5,7 @@ import { eventsMixin } from './events'
 import { lifecycleMixin } from './lifecycle'
 import { warn } from '../util/index'
 
+// Vue的核心构造函数
 function Vue (options) {
   if (process.env.NODE_ENV !== 'production' &&
     !(this instanceof Vue)
@@ -14,10 +15,10 @@ function Vue (options) {
   this._init(options)
 }
 
-initMixin(Vue)
-stateMixin(Vue)
-eventsMixin(Vue)
-lifecycleMixin(Vue)
-renderMixin(Vue)
+initMixin(Vue)  // _init()
+stateMixin(Vue)  // $set(),$watch(),$watch()
+eventsMixin(Vue)  // $on,$emit,$off,$once
+lifecycleMixin(Vue) // ._update 虚拟dom转成正式dom
+renderMixin(Vue)  // _render $nextTick
 
 export default Vue

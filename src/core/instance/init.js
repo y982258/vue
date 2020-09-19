@@ -12,11 +12,12 @@ import { extend, mergeOptions, formatComponentName } from '../util/index'
 
 let uid = 0
 
+// 向Vue原型上添加_init方法
 export function initMixin (Vue: Class<Component>) {
   Vue.prototype._init = function (options?: Object) {
     const vm: Component = this
     // a uid
-    vm._uid = uid++
+    vm._uid = uid++  // 每个组件都有一个唯一的标识 _uid
 
     let startTag, endTag
     /* istanbul ignore if */
@@ -27,7 +28,11 @@ export function initMixin (Vue: Class<Component>) {
     }
 
     // a flag to avoid this being observed
-    vm._isVue = true
+
+
+    vm._isVue = true  // 代表vue的根实例
+
+    
     // merge options
     if (options && options._isComponent) {
       // optimize internal component instantiation
@@ -35,6 +40,8 @@ export function initMixin (Vue: Class<Component>) {
       // internal component options needs special treatment.
       initInternalComponent(vm, options)
     } else {
+
+      // Vue的options和实例的optinos进行合并挂在在自己的$options上
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor),
         options || {},
@@ -48,15 +55,22 @@ export function initMixin (Vue: Class<Component>) {
       vm._renderProxy = vm
     }
     // expose real self
+
+
+
+
     vm._self = vm
-    initLifecycle(vm)
-    initEvents(vm)
-    initRender(vm)
-    callHook(vm, 'beforeCreate')
-    initInjections(vm) // resolve injections before data/props
-    initState(vm)
-    initProvide(vm) // resolve provide after data/props
-    callHook(vm, 'created')
+    initLifecycle(vm)  // 后期组件的父子关系
+    initEvents(vm)  // 组件的事件相关的
+    initRender(vm)  // 插槽 作用域插槽  vm._c方法
+    callHook(vm, 'beforeCreate')   // 调用beforeCreate
+    initInjections(vm) // vue inject
+    initState(vm)   // 初始化状态 进行数据劫持 响应式数据原理
+    initProvide(vm) // vue provide
+    callHook(vm, 'created')  // 调用created
+
+
+
 
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
@@ -65,8 +79,10 @@ export function initMixin (Vue: Class<Component>) {
       measure(`vue ${vm._name} init`, startTag, endTag)
     }
 
-    if (vm.$options.el) {
-      vm.$mount(vm.$options.el)
+
+
+    if (vm.$options.el) {  // 创建一个渲染Watcher 进行渲染组件操作
+      vm.$mount(vm.$options.el)  // 挂载  最终用的是lifecycle.js中的mountComponent  
     }
   }
 }
@@ -91,7 +107,7 @@ export function initInternalComponent (vm: Component, options: InternalComponent
 }
 
 export function resolveConstructorOptions (Ctor: Class<Component>) {
-  let options = Ctor.options
+  let options = Ctor.options   // 实例的ctor就是Vue 
   if (Ctor.super) {
     const superOptions = resolveConstructorOptions(Ctor.super)
     const cachedSuperOptions = Ctor.superOptions

@@ -8,17 +8,18 @@ if (!fs.existsSync('dist')) {
   fs.mkdirSync('dist')
 }
 
+// 通过配置来进行打包
 let builds = require('./config').getAllBuilds()
 
 // filter builds via command line arg
 if (process.argv[2]) {
   const filters = process.argv[2].split(',')
-  builds = builds.filter(b => {
+  builds = builds.filter(b => {  // 过滤要打包的结果
     return filters.some(f => b.output.file.indexOf(f) > -1 || b._name.indexOf(f) > -1)
   })
 } else {
   // filter out weex builds by default
-  builds = builds.filter(b => {
+  builds = builds.filter(b => {  // 默认不打包到weex目录下
     return b.output.file.indexOf('weex') === -1
   })
 }

@@ -26,6 +26,8 @@ const weexFactoryPlugin = {
 }
 
 const aliases = require('./alias')
+
+// 解析出绝对路径  aliases路径规则
 const resolve = p => {
   const base = p.split('/')[0]
   if (aliases[base]) {
@@ -35,6 +37,8 @@ const resolve = p => {
   }
 }
 
+
+// 不同的打包规则
 const builds = {
   // Runtime only (CommonJS). Used by bundlers e.g. Webpack & Browserify
   'web-runtime-cjs-dev': {
@@ -213,6 +217,8 @@ const builds = {
   }
 }
 
+
+// roullup 的打包规则配置
 function genConfig (name) {
   const opts = builds[name]
   const config = {

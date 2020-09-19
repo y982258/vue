@@ -10,7 +10,7 @@ export let isUsingMicroTask = false
 const callbacks = []
 let pending = false
 
-function flushCallbacks () {
+function flushCallbacks () {  // 让nextTick里面的队列执行
   pending = false
   const copies = callbacks.slice(0)
   callbacks.length = 0
@@ -94,12 +94,12 @@ export function nextTick (cb?: Function, ctx?: Object) {
         handleError(e, ctx, 'nextTick')
       }
     } else if (_resolve) {
-      _resolve(ctx)
+      _resolve(ctx)  //循环执行时如果是Promise 就让Promise成功
     }
   })
   if (!pending) {
     pending = true
-    timerFunc()
+    timerFunc()   // 刷新我们的队列
   }
   // $flow-disable-line
   if (!cb && typeof Promise !== 'undefined') {
